@@ -26,4 +26,4 @@ python3 -m http.server 8000      # then open http://localhost:8000
 
 ## Status
 
-The dashboard shows what voice-core measures today: duration, loudness, overall level and pitch (an early autocorrelation tracker, validated on synthetic signals only). Pace, pauses, jitter, shimmer and HNR are greyed "soon" tiles. The walkthrough tags each concept as in voice-core or planned; keep those tags in sync with voice-core's README.
+The dashboard shows what voice-core measures today: duration, loudness, overall level, pitch (an early autocorrelation tracker) and pace in syllables per second. Pitch and pace are validated on synthetic signals only. Pauses, jitter, shimmer and HNR are greyed "soon" tiles. The walkthrough tags each concept as in voice-core or planned; keep those tags in sync with voice-core's README.

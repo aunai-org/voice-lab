@@ -29,14 +29,14 @@
 <h2>5. Pauses <span class="tag soon">planned</span></h2>
 <p>A voice activity detector marks speech vs silence. Silences between speech stretches are pauses; by default one over 1.5 s counts as a long pause (configurable). Use short pauses on purpose, and watch for long ones.</p>
 
-<h2>6. Pace <span class="tag soon">planned</span></h2>
-<p>Words per minute needs a transcript, so the library measures <em>syllables per second</em> by detecting syllable peaks (de Jong and Wempe, 2009). Articulation rate excludes pauses.</p>
+<h2>6. Pace <span class="tag live">in voice-core (early)</span></h2>
+<p>Words per minute needs a transcript, so the library measures <em>syllables per second</em> by detecting syllable peaks (de Jong and Wempe, 2009). The number voice-core reports today divides by the whole recording, so pauses pull it down; a version that excludes pauses (articulation rate) comes with pause detection. So far it has only been checked on synthetic speech-like bursts, not real speech.</p>
 
 <h2>7. Steadiness: jitter, shimmer, HNR <span class="tag soon">planned</span></h2>
 <p><strong>Jitter</strong>: cycle-to-cycle wobble in pitch. <strong>Shimmer</strong>: cycle-to-cycle wobble in loudness. <strong>HNR</strong>: harmonics-to-noise ratio in dB, higher means a clearer, less breathy tone. They are noisy measures, best on a sustained vowel ("aaah"). Not a medical test.</p>
 
-<h2>8. Reports and warnings <span class="tag live">in voice-core (early)</span></h2>
-<p>A measurement can be wrong without looking wrong. The report carries warnings (too short, too noisy, clipped, little voiced speech) so an app can say <em>why</em> a number is unreliable instead of showing it confidently.</p>
+<h2>8. Reports and warnings <span class="tag live">report in voice-core</span> <span class="tag soon">warnings planned</span></h2>
+<p>A measurement can be wrong without looking wrong. The report is one call and one serialisable struct today. The plan is for it to carry warnings (too short, too noisy, clipped, little voiced speech) so an app can say <em>why</em> a number is unreliable instead of showing it confidently.</p>
 
 <h2>9. Streaming vs batch <span class="tag soon">planned</span></h2>
 <p>Batch: analyse the whole take after you stop. Streaming: feed small chunks and get frame results immediately, for a live meter. Both share the same code.</p>
