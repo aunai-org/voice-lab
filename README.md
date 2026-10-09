@@ -2,9 +2,9 @@
 
 Learn how voice measurement works, and try it live. Built around [voice-core](https://github.com/aunai-org/voice-core), the pure-Rust, offline library that measures pitch, loudness, pace, pauses and voice steadiness.
 
-- `index.html`: guided walkthrough of every concept, with small interactive demos
-- `pamphlet.html`: one-page guide for new learners (print friendly)
-- `dashboard.html`: record or upload audio and see loudness, level and pitch measured by the real voice-core, compiled to WebAssembly
+- `index.html` (How it works): guided walkthrough of every concept, with small interactive demos
+- `pamphlet.html` (What is it?): one-page guide for new learners
+- `dashboard.html` (Try it): record or upload audio and see loudness, level and pitch measured by the real voice-core, compiled to WebAssembly
 - `wasm/`: tiny wrapper crate that exposes voice-core to JavaScript
 
 ## Run locally
