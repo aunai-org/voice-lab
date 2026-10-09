@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab dashboard</title><link rel="stylesheet" href="style.css"></head><body><nav><a href="index.html">Walkthrough</a><a href="pamphlet.html">Pamphlet</a><a href="dashboard.html">Dashboard</a></nav><main>
+<h1>Dashboard</h1>
+<p class="card"><b>Status:</b> these numbers are computed by small JavaScript stand-ins so the dashboard works today. Once voice-core is compiled to WebAssembly, the same tiles will be filled by the real library. Nothing leaves your browser.</p>
+<p><button class="primary" id="rec">Record 10 s</button> <label>or upload <input type="file" id="file" accept="audio/*"></label></p>
+<div class="tiles">
+<div class="tile"><small>Duration</small><b id="t-dur">-</b></div>
+<div class="tile"><small>Mean level (dBFS)</small><b id="t-mean">-</b></div>
+<div class="tile"><small>Loudest frame (dBFS)</small><b id="t-peak">-</b></div>
+<div class="tile"><small>Median pitch (Hz) <span class="tag soon">stand-in</span></small><b id="t-f0">-</b></div>
+<div class="tile off"><small>Pace</small><b>soon</b></div>
+<div class="tile off"><small>Pauses</small><b>soon</b></div>
+<div class="tile off"><small>Jitter / shimmer</small><b>soon</b></div>
+<div class="tile off"><small>HNR</small><b>soon</b></div></div>
+<h2>Level over time (25 ms frames)</h2><canvas id="c1" width="720" height="140"></canvas>
+<h2>Pitch over time</h2><canvas id="c2" width="720" height="140"></canvas>
+<p class="try">Try: record yourself reading, then again more quietly. Which tiles move?</p>
+</main><script>
+const $=i=>document.getElementById(i);
+async function analyse(buf){
+  const ch=buf.getChannelData(0),sr=buf.sampleRate,fl=Math.round(sr*.025),hop=Math.round(sr*.01);
+  const lv=[],f0=[];
+  for(let s=0;s+fl<=ch.length;s+=hop){
+    let e=0;for(let i=0;i<fl;i++)e+=ch[s+i]*ch[s+i];
+    const db=10*Math.log10(Math.max(e/fl,1e-10));lv.push(db);
+    f0.push(db>-45?pitch(ch,s,fl*2<ch.length-s?fl*2:fl,sr):0);
+  }
+  const act=lv.filter(d=>d>-60),v=f0.filter(x=>x>0).sort((a,b)=>a-b);
+  $('t-dur').textContent=buf.duration.toFixed(1)+' s';
+  $('t-mean').textContent=act.length?(act.reduce((a,b)=>a+b)/act.length).toFixed(1):'-';
+  $('t-peak').textContent=Math.max(...lv).toFixed(1);
+  $('t-f0').textContent=v.length?v[v.length>>1].toFixed(0):'-';
+  draw($('c1'),lv,-80,0);draw($('c2'),f0,0,400);
+}
+function pitch(x,s,n,sr){ // naive autocorrelation, 70-400 Hz
+  const lo=Math.floor(sr/400),hi=Math.floor(sr/70);let best=0,bl=0,r0=0;
+  for(let i=0;i<n;i++)r0+=x[s+i]*x[s+i];if(!r0)return 0;
+  for(let l=lo;l<=hi&&l<n;l++){let r=0;for(let i=0;i+l<n;i++)r+=x[s+i]*x[s+i+l];if(r>best){best=r;bl=l}}
+  return best/r0>.5?sr/bl:0;
+}
+function draw(c,d,min,max){
+  const g=c.getContext('2d'),w=c.width,h=c.height,st=getComputedStyle(document.documentElement);
+  g.clearRect(0,0,w,h);g.strokeStyle=st.getPropertyValue('--acc');g.lineWidth=2;g.beginPath();let on=false;
+  d.forEach((y,i)=>{const px=i/(d.length-1||1)*w;if(max===400&&y===0){on=false;return}
+    const py=h-(Math.min(Math.max(y,min),max)-min)/(max-min)*h;on?g.lineTo(px,py):g.moveTo(px,py);on=true});g.stroke();
+}
+async function decode(ab){const c=new (window.AudioContext||webkitAudioContext)();analyse(await c.decodeAudioData(ab))}
+$('file').onchange=e=>e.target.files[0]&&e.target.files[0].arrayBuffer().then(decode);
+$('rec').onclick=async()=>{try{
+  const s=await navigator.mediaDevices.getUserMedia({audio:true}),r=new MediaRecorder(s),p=[];
+  r.ondataavailable=e=>p.push(e.data);r.onstop=async()=>{s.getTracks().forEach(t=>t.stop());$('rec').textContent='Record 10 s';$('rec').disabled=false;decode(await new Blob(p).arrayBuffer())};
+  r.start();$('rec').disabled=true;let n=10;$('rec').textContent='Recording '+n;
+  const t=setInterval(()=>{n--;$('rec').textContent='Recording '+n;if(n<=0){clearInterval(t);r.stop()}},1000);
+}catch(e){alert('Microphone unavailable: '+e.message)}};
+</script></body></html>
