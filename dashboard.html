@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css"></head><body><nav><a href="index.html">How it works</a><a href="pamphlet.html">What is it?</a><a href="dashboard.html">Try it</a></nav><main>
 <h1>Dashboard</h1>
-<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pace is new and has only been checked on synthetic speech-like bursts, so treat it as a rough guide. Pauses and steadiness tiles light up as voice-core gains them.</p>
+<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace has only been checked on synthetic bursts, so treat it as a rough guide. The steadiness tile (jitter, shimmer, HNR) lights up when voice-core gains it.</p>
 <p id="status" class="tag soon">loading voice-core…</p>
 <p><button class="primary" id="rec" disabled>Record 10 s</button> <label>or upload <input type="file" id="file" accept="audio/*" disabled></label></p>
 <div class="tiles">
@@ -10,7 +10,8 @@
 <div class="tile"><small>Median pitch (Hz)</small><b id="t-f0">-</b></div>
 <div class="tile"><small>Voiced share</small><b id="t-voiced">-</b></div>
 <div class="tile"><small>Pace (syllables/s) <span class="tag soon">early</span></small><b id="t-pace">-</b></div>
-<div class="tile off"><small>Pauses</small><b>soon</b></div>
+<div class="tile"><small>Pauses</small><b id="t-pauses">-</b></div>
+<div class="tile"><small>Longest pause</small><b id="t-longest">-</b></div>
 <div class="tile off"><small>Jitter / shimmer / HNR</small><b>soon</b></div></div>
 <p id="warn" class="try"></p>
 <h2>Level over time (25 ms frames)</h2><canvas id="c1" width="720" height="140"></canvas>
@@ -31,8 +32,10 @@ function run(buf){
     $('t-f0').textContent=r.f0_median_hz==null?'none':r.f0_median_hz.toFixed(0);
     $('t-voiced').textContent=Math.round(r.voiced_fraction*100)+'%';
     $('t-pace').textContent=r.syllables_per_second.toFixed(1);
-    if(r.duration_s<1)$('warn').textContent='Warning: under 1 second of audio, so numbers may be unreliable.';
-    else if(r.voiced_fraction<.1)$('warn').textContent='Warning: very little voiced speech found; pitch may be unreliable.';
+    $('t-pauses').textContent=r.pause_count+(r.pause_count?' ('+r.pause_total_s.toFixed(1)+' s)':'');
+    $('t-longest').textContent=r.pause_count?r.longest_pause_s.toFixed(1)+' s':'-';
+    const msg={too_short:'the recording is under 1 second',clipped:'the audio is clipped (too loud for the microphone)',too_quiet:'the recording is very quiet'};
+    $('warn').textContent=r.warnings.length?'Read these numbers with care: '+r.warnings.map(w=>msg[w]||w).join('; ')+'.':'';
     draw($('c1'),lv,-80,0,false);draw($('c2'),f0,0,400,true);
   }catch(e){$('warn').textContent='Could not analyse this audio: '+e.message}
 }
