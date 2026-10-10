@@ -26,4 +26,4 @@ python3 -m http.server 8000      # then open http://localhost:8000
 
 ## Status
 
-The dashboard shows what voice-core measures today: duration, loudness, overall level, pitch (an early autocorrelation tracker) and pace in syllables per second. Pitch and pace are validated on synthetic signals only. Pauses, jitter, shimmer and HNR are greyed "soon" tiles. The walkthrough tags each concept as in voice-core or planned; keep those tags in sync with voice-core's README.
+The dashboard shows what voice-core measures today: duration, loudness, overall level, pitch, pace (syllables per second), pause count and longest pause, plus voice-core's own quality warnings. Pitch and pauses are compared with Praat on real speech clips; pace is validated on synthetic bursts only. Jitter, shimmer and HNR are a greyed "soon" tile. The streaming analyzer (live level and speech/silence) is not in the dashboard yet. The walkthrough tags each concept as in voice-core or planned; keep those tags in sync with voice-core's README.
