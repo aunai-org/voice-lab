@@ -2,6 +2,7 @@
 //! All measuring happens in voice-core; this file only adapts types for JS.
 
 use voice_core::pitch::{AutocorrEstimator, PitchEstimator};
+use voice_core::stream::{Analyzer, FrameInfo};
 use voice_core::{dsp, loudness, report};
 use wasm_bindgen::prelude::*;
 
@@ -32,4 +33,44 @@ pub fn pitch_track(samples: &[f32], sample_rate: u32) -> Result<Vec<f32>, JsErro
         .estimate(samples, sample_rate)
         .map_err(err)?;
     Ok(track.iter().map(|f| f.f0_hz.unwrap_or(0.0)).collect())
+}
+
+/// Live analysis of a microphone stream. Frames come back flattened, four numbers each:
+/// time in seconds, level in dBFS, speech (1.0) or silence (0.0), pitch in Hz (0.0 when unvoiced).
+#[wasm_bindgen]
+pub struct LiveAnalyzer {
+    inner: Option<Analyzer>,
+}
+
+fn flatten(frames: Vec<FrameInfo>) -> Vec<f32> {
+    let mut out = Vec::with_capacity(frames.len() * 4);
+    for f in frames {
+        out.extend_from_slice(&[
+            f.time_s as f32,
+            f.level_dbfs,
+            if f.speech { 1.0 } else { 0.0 },
+            f.f0_hz.unwrap_or(0.0),
+        ]);
+    }
+    out
+}
+
+#[wasm_bindgen]
+impl LiveAnalyzer {
+    #[wasm_bindgen(constructor)]
+    pub fn new(sample_rate: u32) -> Result<LiveAnalyzer, JsError> {
+        Ok(LiveAnalyzer {
+            inner: Some(Analyzer::new(sample_rate).map_err(err)?),
+        })
+    }
+
+    /// Feeds a chunk of any size and returns the frames that are now complete.
+    pub fn push(&mut self, chunk: &[f32]) -> Vec<f32> {
+        self.inner.as_mut().map(|a| flatten(a.push(chunk))).unwrap_or_default()
+    }
+
+    /// Ends the stream and returns the last frames. The analyzer is unusable afterwards.
+    pub fn finish(&mut self) -> Vec<f32> {
+        self.inner.take().map(|a| flatten(a.finish())).unwrap_or_default()
+    }
 }

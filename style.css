@@ -15,3 +15,5 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid var(--li
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}.tile b{display:block;font-size:1.6rem}.tile.off{opacity:.55}
 @media print{nav,.noprint{display:none}body{background:#fff;color:#000}.card{break-inside:avoid}}
+
+.meter{height:14px;background:var(--line);border-radius:7px;overflow:hidden}#meter-fill{height:100%;width:0;background:var(--acc);transition:width .05s linear}

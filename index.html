@@ -21,13 +21,13 @@
 <p class="try">Predict: what amplitude gives -40 dBFS?</p>
 
 <h2>4. Pitch <span class="tag live">in voice-core</span></h2>
-<p>Pitch (f0) is how many times per second your vocal folds vibrate, in Hz. Only <em>voiced</em> sounds (vowels, "m", "z") have pitch; "s" and silence do not. Because we hear pitch on a ratio scale, we report <em>semitones</em> relative to 100 Hz. voice-core tracks pitch frame by frame and then picks the most plausible path across frames, which avoids most "octave jumps" (reporting double the true pitch). It has been compared with Praat on synthetic signals and on eight real speech clips.</p>
+<p>Pitch (f0) is how many times per second your vocal folds vibrate, in Hz. Only <em>voiced</em> sounds (vowels, "m", "z") have pitch; "s" and silence do not. Because we hear pitch on a ratio scale, we report <em>semitones</em> relative to 100 Hz. voice-core tracks pitch frame by frame and then picks the most plausible path across frames, which avoids most "octave jumps" (reporting double the true pitch). It has been compared with Praat on synthetic signals and on twenty real speech clips, twelve of them noisy.</p>
 <div class="card"><label>f0: <b id="f0v">200</b> Hz<input id="f0" type="range" min="80" max="400" value="200"></label>
 <p>= <b id="st">12.0</b> semitones above 100 Hz. <button id="play">Play tone</button></p></div>
 <p class="try">Predict: going from 100 Hz to 200 Hz is 12 semitones. How many semitones from 200 to 400 Hz?</p>
 
 <h2>5. Pauses <span class="tag live">in voice-core</span></h2>
-<p>Frames within 25 dB of your loudest frame count as speech; the rest is silence. A silent gap of at least 0.1 s between two stretches of speech is a <em>pause</em>. Silence at the very start and end is not a pause. voice-core reports the count, total pause time and the longest pause, and agrees with Praat's silence detection on eight real clips. Because the threshold is relative to your loudest frame, one loud click in a quiet recording can hide the speech.</p>
+<p>Frames within 25 dB of your loudest frame count as speech; the rest is silence. A silent gap of at least 0.1 s between two stretches of speech is a <em>pause</em>. Silence at the very start and end is not a pause. voice-core reports the count, total pause time and the longest pause, and agrees with Praat's silence detection on 98.7% of 10 ms frames across twenty real clips. Because the threshold is relative to your loudest frame, one loud click in a quiet recording can hide the speech.</p>
 
 <h2>6. Pace <span class="tag live">in voice-core (early)</span></h2>
 <p>Words per minute needs a transcript, so the library measures <em>syllables per second</em> by detecting syllable peaks (de Jong and Wempe, 2009). The number voice-core reports today divides by the whole recording, so pauses pull it down; a version that excludes pauses (articulation rate) is not in the library yet. So far it has only been checked on synthetic speech-like bursts, not real speech.</p>
@@ -39,7 +39,7 @@
 <p>A measurement can be wrong without looking wrong. One call returns the whole report as a serialisable struct, together with warnings so an app can say <em>why</em> a number is unreliable instead of showing it confidently. Today the warnings are: recording too short (under 1 s), clipped, and too quiet. A "too noisy" warning is planned. The thresholds are practical defaults, not from a standard.</p>
 
 <h2>9. Streaming vs batch <span class="tag live">in voice-core (early)</span></h2>
-<p>Batch: analyse the whole take after you stop. Streaming: feed small chunks of any size and get a level and a speech/silence flag for each 10 ms frame almost immediately, for a live meter. The streaming speech flag is rougher than the batch pauses (it agrees with Praat on about 88% of frames), so use batch for final numbers. Live pitch and pace in streaming are planned.</p>
+<p>Batch: analyse the whole take after you stop. Streaming: feed small chunks of any size and get a level, a speech/silence flag and a pitch for each 10 ms frame within about 20 ms, for a live meter. The streaming answers are rougher because each frame is decided from the past only: the speech flag agrees with Praat on about 86% of frames, and live pitch can jump octaves, so use batch for final numbers. Live pace is planned. Try it on the dashboard: press Record and watch the meter.</p>
 
 <h2>10. For developers</h2>
 <ul><li>No network, no model files, builds for desktop, Android, iOS and <code>wasm32-unknown-unknown</code>.</li>
