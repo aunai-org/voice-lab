@@ -1,8 +1,13 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css"></head><body><nav><a href="index.html">How it works</a><a href="pamphlet.html">What is it?</a><a href="dashboard.html">Try it</a></nav><main>
 <h1>Dashboard</h1>
-<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace has only been checked on synthetic bursts, so treat it as a rough guide. The steadiness tile (jitter, shimmer, HNR) lights up when voice-core gains it.</p>
+<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace has only been checked on synthetic bursts, so treat it as a rough guide. While you record, a live meter, speech flag and pitch come from voice-core's streaming analyzer. The steadiness tile (jitter, shimmer, HNR) lights up when voice-core gains it.</p>
 <p id="status" class="tag soon">loading voice-core…</p>
-<p><button class="primary" id="rec" disabled>Record 10 s</button> <label>or upload <input type="file" id="file" accept="audio/*" disabled></label></p>
+<p><button class="primary" id="rec" disabled>Record</button> <label>or upload <input type="file" id="file" accept="audio/*" disabled></label></p>
+<div class="card" id="live" hidden>
+<div class="meter"><div id="meter-fill"></div></div>
+<p><span id="live-speech" class="tag">silence</span> &nbsp;level <b id="live-level">-</b> dBFS &nbsp;&middot;&nbsp; live pitch <b id="live-f0">-</b> Hz</p>
+<p class="try">Live numbers are quick estimates from voice-core's streaming analyzer, so pitch can jump octaves. The final numbers below appear when you stop.</p>
+</div>
 <div class="tiles">
 <div class="tile"><small>Duration</small><b id="t-dur">-</b></div>
 <div class="tile"><small>Loudness (LUFS)</small><b id="t-lufs">-</b></div>
@@ -18,12 +23,12 @@
 <h2>Pitch over time (voiced frames)</h2><canvas id="c2" width="720" height="140"></canvas>
 <p class="try">Try: record yourself reading, then again more quietly. Which tiles move? Loudness is relative, so compare takes on the same device.</p>
 </main><script type="module">
-import init,{analyze,level_curve,pitch_track} from './pkg/voice_lab_wasm.js';
+import init,{analyze,level_curve,pitch_track,LiveAnalyzer} from './pkg/voice_lab_wasm.js';
 const $=i=>document.getElementById(i);
 try{await init();$('status').textContent='voice-core ready';$('status').className='tag live';$('rec').disabled=false;$('file').disabled=false}
 catch(e){$('status').textContent='voice-core not built: run scripts/build-wasm.sh (see README)'}
-function run(buf){
-  const x=buf.getChannelData(0),sr=buf.sampleRate;$('warn').textContent='';
+function run(x,sr){
+  $('warn').textContent='';
   try{
     const r=JSON.parse(analyze(x,sr)),lv=level_curve(x,sr),f0=pitch_track(x,sr);
     $('t-dur').textContent=r.duration_s.toFixed(1)+' s';
@@ -46,12 +51,45 @@ function draw(c,d,min,max,skipZero){
     const px=i/(d.length-1||1)*w,py=h-(Math.min(Math.max(y,min),max)-min)/(max-min)*h;on?g.lineTo(px,py):g.moveTo(px,py);on=true}
   g.stroke();
 }
-async function decode(ab){const c=new (window.AudioContext||webkitAudioContext)();try{run(await c.decodeAudioData(ab))}catch(e){$('warn').textContent='Could not decode this audio file.'}c.close()}
+async function decode(ab){const c=new (window.AudioContext||webkitAudioContext)();try{const b=await c.decodeAudioData(ab);run(b.getChannelData(0),b.sampleRate)}catch(e){$('warn').textContent='Could not decode this audio file.'}c.close()}
 $('file').onchange=e=>e.target.files[0]&&e.target.files[0].arrayBuffer().then(decode);
-$('rec').onclick=async()=>{try{
-  const s=await navigator.mediaDevices.getUserMedia({audio:true}),r=new MediaRecorder(s),p=[];
-  r.ondataavailable=e=>p.push(e.data);r.onstop=async()=>{s.getTracks().forEach(t=>t.stop());$('rec').textContent='Record 10 s';$('rec').disabled=false;decode(await new Blob(p).arrayBuffer())};
-  r.start();$('rec').disabled=true;let n=10;$('rec').textContent='Recording '+n;
-  const t=setInterval(()=>{n--;$('rec').textContent='Recording '+n;if(n<=0){clearInterval(t);r.stop()}},1000);
-}catch(e){alert('Microphone unavailable: '+e.message)}};
+const WORKLET=`class P extends AudioWorkletProcessor{constructor(){super();this.b=[];this.n=0}process(i){const c=i[0]&&i[0][0];if(c){this.b.push(c.slice());this.n+=c.length;if(this.n>=1024){const o=new Float32Array(this.n);let k=0;for(const a of this.b){o.set(a,k);k+=a.length}this.port.postMessage(o,[o.buffer]);this.b=[];this.n=0}}return true}}registerProcessor('cap',P)`;
+const MAX_S=15;let session=null;
+$('rec').onclick=()=>session?stopRec():startRec();
+async function startRec(){
+  let stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
+  catch(e){alert('Microphone unavailable: '+e.message);return}
+  const ctx=new AudioContext();
+  try{
+    const url=URL.createObjectURL(new Blob([WORKLET],{type:'text/javascript'}));
+    await ctx.audioWorklet.addModule(url);URL.revokeObjectURL(url);
+    await ctx.resume();
+    const node=new AudioWorkletNode(ctx,'cap',{numberOfOutputs:0});
+    ctx.createMediaStreamSource(stream).connect(node);
+    const s=session={ctx,stream,node,la:new LiveAnalyzer(ctx.sampleRate),chunks:[],lv:[],f0:[],t0:performance.now()};
+    node.port.onmessage=e=>{s.chunks.push(e.data);live(s,s.la.push(e.data))};
+    $('live').hidden=false;$('warn').textContent='';
+    s.timer=setInterval(()=>{const n=Math.floor((performance.now()-s.t0)/1000);$('rec').textContent='Stop ('+n+' s)';if(n>=MAX_S)stopRec()},250);
+    $('rec').textContent='Stop (0 s)';$('file').disabled=true;
+  }catch(e){stream.getTracks().forEach(t=>t.stop());ctx.close();session=null;alert('Could not start recording: '+e.message)}
+}
+function live(s,fr){
+  for(let i=0;i<fr.length;i+=4){s.lv.push(fr[i+1]);s.f0.push(fr[i+3])}
+  if(!fr.length)return;const k=fr.length-4,lvl=fr[k+1],sp=fr[k+2]>0,f=fr[k+3];
+  $('meter-fill').style.width=Math.max(0,Math.min(100,(lvl+80)/80*100))+'%';
+  $('live-level').textContent=lvl.toFixed(0);$('live-f0').textContent=f>0?f.toFixed(0):'-';
+  $('live-speech').textContent=sp?'speech':'silence';$('live-speech').className='tag '+(sp?'live':'');
+  draw($('c1'),s.lv,-80,0,false);draw($('c2'),s.f0,0,400,true);
+}
+function stopRec(){
+  const s=session;if(!s)return;session=null;clearInterval(s.timer);
+  s.node.port.onmessage=null;s.node.disconnect();s.stream.getTracks().forEach(t=>t.stop());
+  const sr=s.ctx.sampleRate;s.ctx.close();s.la.finish();
+  $('live').hidden=true;$('rec').textContent='Record';$('file').disabled=false;
+  let n=0;for(const c of s.chunks)n+=c.length;
+  if(!n){$('warn').textContent='No audio was captured.';return}
+  const x=new Float32Array(n);let k=0;for(const c of s.chunks){x.set(c,k);k+=c.length}
+  run(x,sr);
+}
 </script></body></html>
