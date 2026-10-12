@@ -35,21 +35,24 @@ pub fn pitch_track(samples: &[f32], sample_rate: u32) -> Result<Vec<f32>, JsErro
     Ok(track.iter().map(|f| f.f0_hz.unwrap_or(0.0)).collect())
 }
 
-/// Live analysis of a microphone stream. Frames come back flattened, four numbers each:
-/// time in seconds, level in dBFS, speech (1.0) or silence (0.0), pitch in Hz (0.0 when unvoiced).
+/// Live analysis of a microphone stream. Frames come back flattened, six numbers each:
+/// time in seconds, level in dBFS, speech (1.0) or silence (0.0), pitch in Hz (0.0 when unvoiced),
+/// syllable peak (1.0 or 0.0), syllables per second over the last 3 s (-1.0 in the first second).
 #[wasm_bindgen]
 pub struct LiveAnalyzer {
     inner: Option<Analyzer>,
 }
 
 fn flatten(frames: Vec<FrameInfo>) -> Vec<f32> {
-    let mut out = Vec::with_capacity(frames.len() * 4);
+    let mut out = Vec::with_capacity(frames.len() * 6);
     for f in frames {
         out.extend_from_slice(&[
             f.time_s as f32,
             f.level_dbfs,
             if f.speech { 1.0 } else { 0.0 },
             f.f0_hz.unwrap_or(0.0),
+            if f.syllable_nucleus { 1.0 } else { 0.0 },
+            f.syllable_rate_hz.unwrap_or(-1.0),
         ]);
     }
     out

@@ -1,11 +1,11 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css"></head><body><nav><a href="index.html">How it works</a><a href="pamphlet.html">What is it?</a><a href="dashboard.html">Try it</a></nav><main>
 <h1>Dashboard</h1>
-<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace has only been checked on synthetic bursts, so treat it as a rough guide. While you record, a live meter, speech flag and pitch come from voice-core's streaming analyzer. The steadiness tile (jitter, shimmer, HNR) lights up when voice-core gains it.</p>
+<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace agrees with a Praat-based syllable detector on real clips, but there is no human syllable count, so treat it as a guide. While you record, a live meter, speech flag, pitch and pace come from voice-core's streaming analyzer. The steadiness tile (jitter, shimmer, HNR) lights up when voice-core gains it.</p>
 <p id="status" class="tag soon">loading voice-core…</p>
 <p><button class="primary" id="rec" disabled>Record</button> <label>or upload <input type="file" id="file" accept="audio/*" disabled></label></p>
 <div class="card" id="live" hidden>
 <div class="meter"><div id="meter-fill"></div></div>
-<p><span id="live-speech" class="tag">silence</span> &nbsp;level <b id="live-level">-</b> dBFS &nbsp;&middot;&nbsp; live pitch <b id="live-f0">-</b> Hz</p>
+<p><span id="live-speech" class="tag">silence</span> &nbsp;level <b id="live-level">-</b> dBFS &nbsp;&middot;&nbsp; live pitch <b id="live-f0">-</b> Hz &nbsp;&middot;&nbsp; live pace <b id="live-pace">-</b> syl/s</p>
 <p class="try">Live numbers are quick estimates from voice-core's streaming analyzer, so pitch can jump octaves. The final numbers below appear when you stop.</p>
 </div>
 <div class="tiles">
@@ -75,10 +75,10 @@ async function startRec(){
   }catch(e){stream.getTracks().forEach(t=>t.stop());ctx.close();session=null;alert('Could not start recording: '+e.message)}
 }
 function live(s,fr){
-  for(let i=0;i<fr.length;i+=4){s.lv.push(fr[i+1]);s.f0.push(fr[i+3])}
-  if(!fr.length)return;const k=fr.length-4,lvl=fr[k+1],sp=fr[k+2]>0,f=fr[k+3];
+  for(let i=0;i<fr.length;i+=6){s.lv.push(fr[i+1]);s.f0.push(fr[i+3])}
+  if(!fr.length)return;const k=fr.length-6,lvl=fr[k+1],sp=fr[k+2]>0,f=fr[k+3],pc=fr[k+5];
   $('meter-fill').style.width=Math.max(0,Math.min(100,(lvl+80)/80*100))+'%';
-  $('live-level').textContent=lvl.toFixed(0);$('live-f0').textContent=f>0?f.toFixed(0):'-';
+  $('live-level').textContent=lvl.toFixed(0);$('live-f0').textContent=f>0?f.toFixed(0):'-';$('live-pace').textContent=pc>=0?pc.toFixed(1):'-';
   $('live-speech').textContent=sp?'speech':'silence';$('live-speech').className='tag '+(sp?'live':'');
   draw($('c1'),s.lv,-80,0,false);draw($('c2'),s.f0,0,400,true);
 }
