@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css"></head><body><nav><a href="index.html">How it works</a><a href="pamphlet.html">What is it?</a><a href="dashboard.html">Try it</a></nav><main>
 <h1>Dashboard</h1>
-<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace agrees with a Praat-based syllable detector on real clips, but there is no human syllable count, so treat it as a guide. While you record, a live meter, speech flag, pitch and pace come from voice-core's streaming analyzer. The steadiness tile (jitter, shimmer, HNR) lights up when voice-core gains it.</p>
+<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace agrees with a Praat-based syllable detector on real clips, but there is no human syllable count, so treat it as a guide. While you record, a live meter, speech flag, pitch and pace come from voice-core's streaming analyzer. Jitter and shimmer (compared with Praat on the same real clips) and HNR are batch-only, so they appear once you stop or upload; they need a few seconds of voiced speech and read best on a sustained vowel. Not a medical test.</p>
 <p id="status" class="tag soon">loading voice-core…</p>
 <p><button class="primary" id="rec" disabled>Record</button> <label>or upload <input type="file" id="file" accept="audio/*" disabled></label></p>
 <div class="card" id="live" hidden>
@@ -17,7 +17,9 @@
 <div class="tile"><small>Pace (syllables/s) <span class="tag soon">early</span></small><b id="t-pace">-</b></div>
 <div class="tile"><small>Pauses</small><b id="t-pauses">-</b></div>
 <div class="tile"><small>Longest pause</small><b id="t-longest">-</b></div>
-<div class="tile off"><small>Jitter / shimmer / HNR</small><b>soon</b></div></div>
+<div class="tile"><small>Jitter (%)</small><b id="t-jit">-</b></div>
+<div class="tile"><small>Shimmer (%)</small><b id="t-shim">-</b></div>
+<div class="tile"><small>HNR (dB)</small><b id="t-hnr">-</b></div></div>
 <p id="warn" class="try"></p>
 <h2>Level over time (25 ms frames)</h2><canvas id="c1" width="720" height="140"></canvas>
 <h2>Pitch over time (voiced frames)</h2><canvas id="c2" width="720" height="140"></canvas>
@@ -39,7 +41,10 @@ function run(x,sr){
     $('t-pace').textContent=r.syllables_per_second.toFixed(1);
     $('t-pauses').textContent=r.pause_count+(r.pause_count?' ('+r.pause_total_s.toFixed(1)+' s)':'');
     $('t-longest').textContent=r.pause_count?r.longest_pause_s.toFixed(1)+' s':'-';
-    const msg={too_short:'the recording is under 1 second',clipped:'the audio is clipped (too loud for the microphone)',too_quiet:'the recording is very quiet'};
+    $('t-jit').textContent=r.jitter_local==null?'n/a':(r.jitter_local*100).toFixed(2);
+    $('t-shim').textContent=r.shimmer_local==null?'n/a':(r.shimmer_local*100).toFixed(1);
+    $('t-hnr').textContent=r.hnr_db==null?'n/a':r.hnr_db.toFixed(1);
+    const msg={noisy:'there is a lot of background noise',too_short:'the recording is under 1 second',clipped:'the audio is clipped (too loud for the microphone)',too_quiet:'the recording is very quiet'};
     $('warn').textContent=r.warnings.length?'Read these numbers with care: '+r.warnings.map(w=>msg[w]||w).join('; ')+'.':'';
     draw($('c1'),lv,-80,0,false);draw($('c2'),f0,0,400,true);
   }catch(e){$('warn').textContent='Could not analyse this audio: '+e.message}
