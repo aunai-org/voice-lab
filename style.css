@@ -45,4 +45,35 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid var(--li
 
 #live{border-radius:16px}
 
-@media print{nav,.noprint{display:none}body{background:#fff;color:#000}.card{break-inside:avoid}}
+@media print{header.top,.noprint{display:none}body{background:#fff;color:#000}.card{break-inside:avoid}}
+
+/* header */
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px 24px;border-bottom:1px solid var(--line)}
+header.top nav{border:0;padding:0;flex:1}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:1.1rem;letter-spacing:-.01em;color:var(--fg);text-decoration:none}
+.brand svg{fill:var(--acc)}
+header.top .tag{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+/* dashboard layout */
+main.wide{max-width:1040px;padding:32px 24px 72px}
+.hl{color:var(--acc)}
+.lead{max-width:680px;color:var(--mut);margin:0 0 24px}
+details.card summary{cursor:pointer;color:var(--mut)}
+details.card[open] summary{margin-bottom:8px}
+.rec-card{padding:24px;border-radius:20px}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin:0}
+.live{margin-top:20px;padding:16px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.live p{margin:8px 0 0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.85rem;color:var(--mut)}
+.live p.try{font-family:inherit}
+.live b{color:var(--fg)}
+.tiles{margin:20px 0}
+.tiles.idle .tile{opacity:.45}
+#warn{margin:0 0 20px;padding:12px 16px;border:1px solid var(--warn);border-radius:12px;color:var(--warn)}
+#warn:empty{display:none}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;margin-bottom:20px}
+.charts .card{margin:0}
+.card h2{margin:0 0 12px;font-size:1rem;display:flex;align-items:center;gap:8px}
+.card h2 small{font:400 .75rem ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:var(--mut)}
+.card h2 .i{width:18px;height:18px;color:var(--acc)}
+.card h2 .i.ok{color:var(--ok)}
+.charts canvas{border:0;background:transparent}

@@ -1,14 +1,16 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css?v=2"></head><body><nav aria-label="Primary"><a href="index.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>How it works</a><a href="pamphlet.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>What is it?</a><a href="dashboard.html" aria-current="page"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Try it</a></nav><main>
-<h1>Dashboard</h1>
-<p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace agrees with a Praat-based syllable detector on real clips, but there is no human syllable count, so treat it as a guide. While you record, a live meter, speech flag, pitch and pace come from voice-core's streaming analyzer. Jitter and shimmer (compared with Praat on the same real clips) and HNR are batch-only, so they appear once you stop or upload; they need a few seconds of voiced speech and read best on a sustained vowel. Not a medical test.</p>
-<p id="status" class="tag soon">loading voice-core…</p>
-<p style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><button class="primary" id="rec" disabled><svg class="i" id="rec-icon" viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="rec-label">Record</span></button> or <label class="upload"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px"><path d="M12 15V3M7 8l5-5 5 5M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Upload audio <input type="file" id="file" accept="audio/*" disabled></label></p>
-<div class="card" id="live" hidden>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css?v=2"></head><body><header class="top"><a class="brand" href="index.html"><svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true"><rect x="2" y="11" width="3" height="6" rx="1.5"/><rect x="8" y="6" width="3" height="16" rx="1.5"/><rect x="14" y="2" width="3" height="24" rx="1.5"/><rect x="20" y="8" width="3" height="12" rx="1.5"/></svg>voice-lab</a><nav aria-label="Primary"><a href="index.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>How it works</a><a href="pamphlet.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>What is it?</a><a href="dashboard.html" aria-current="page"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Try it</a></nav><span id="status" class="tag soon">loading voice-core…</span></header><main class="wide">
+<h1>Measure your voice. <span class="hl">Right here.</span></h1>
+<p class="lead">Powered by voice-core, a Rust library compiled to WebAssembly. It runs in your browser and nothing leaves your device. Not a medical test.</p>
+<details class="card"><summary>How this is measured</summary><p><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace agrees with a Praat-based syllable detector on real clips, but there is no human syllable count, so treat it as a guide. While you record, a live meter, speech flag, pitch and pace come from voice-core's streaming analyzer. Jitter and shimmer (compared with Praat on the same real clips) and HNR are batch-only, so they appear once you stop or upload; they need a few seconds of voiced speech and read best on a sustained vowel. Not a medical test.</p></details>
+<section class="card rec-card" aria-label="Record or upload">
+<p class="controls"><button class="primary" id="rec" disabled><svg class="i" id="rec-icon" viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="rec-label">Record</span></button> or <label class="upload"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px"><path d="M12 15V3M7 8l5-5 5 5M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Upload audio <input type="file" id="file" accept="audio/*" disabled></label></p>
+<div id="live" class="live" hidden>
 <canvas id="wave" class="wave" width="720" height="72" role="img" aria-label="Live waveform of the microphone input"></canvas>
 <p><span id="live-speech" class="tag">silence</span> &nbsp;level <b id="live-level">-</b> dBFS &nbsp;&middot;&nbsp; live pitch <b id="live-f0">-</b> Hz &nbsp;&middot;&nbsp; live pace <b id="live-pace">-</b> syl/s</p>
 <p class="try">Live numbers are quick estimates from voice-core's streaming analyzer, so pitch can jump octaves. The final numbers below appear when you stop.</p>
 </div>
-<div class="tiles">
+</section>
+<div class="tiles idle" id="tiles">
 <div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/></svg>Duration</small><b id="t-dur">-</b></div>
 <div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>Loudness (LUFS)</small><b id="t-lufs">-</b></div>
 <div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20v-5"/></svg>Overall level (dBFS)</small><b id="t-rms">-</b></div>
@@ -20,9 +22,11 @@
 <div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h3l2-5 3 10 3-12 3 9 2-2h4"/></svg>Jitter (%)</small><b id="t-jit">-</b></div>
 <div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2"/></svg>Shimmer (%)</small><b id="t-shim">-</b></div>
 <div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>HNR (dB)</small><b id="t-hnr">-</b></div></div>
-<p id="warn" class="try"></p>
-<h2>Level over time (25 ms frames)</h2><canvas id="c1" width="720" height="140"></canvas>
-<h2>Pitch over time (voiced frames)</h2><canvas id="c2" width="720" height="140"></canvas>
+<p id="warn" role="status"></p>
+<div class="charts">
+<section class="card"><h2><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>Level over time <small>25 ms frames</small></h2><canvas id="c1" width="720" height="140"></canvas></section>
+<section class="card"><h2><svg class="i ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 4-8 5 5"/></svg>Pitch over time <small>voiced frames</small></h2><canvas id="c2" width="720" height="140"></canvas></section>
+</div>
 <p class="try">Try: record yourself reading, then again more quietly. Which tiles move? Loudness is relative, so compare takes on the same device.</p>
 </main><script type="module">
 import init,{analyze,level_curve,pitch_track,LiveAnalyzer} from './pkg/voice_lab_wasm.js';
@@ -30,7 +34,7 @@ const $=i=>document.getElementById(i);
 try{await init();$('status').textContent='voice-core ready';$('status').className='tag live';$('rec').disabled=false;$('file').disabled=false}
 catch(e){$('status').textContent='voice-core not built: run scripts/build-wasm.sh (see README)'}
 function run(x,sr){
-  $('warn').textContent='';
+  $('warn').textContent='';$('tiles').classList.remove('idle');
   try{
     const r=JSON.parse(analyze(x,sr)),lv=level_curve(x,sr),f0=pitch_track(x,sr);
     $('t-dur').textContent=r.duration_s.toFixed(1)+' s';
