@@ -1,25 +1,25 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css"></head><body><nav><a href="index.html">How it works</a><a href="pamphlet.html">What is it?</a><a href="dashboard.html">Try it</a></nav><main>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css"></head><body><nav aria-label="Primary"><a href="index.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>How it works</a><a href="pamphlet.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>What is it?</a><a href="dashboard.html" aria-current="page"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Try it</a></nav><main>
 <h1>Dashboard</h1>
 <p class="card"><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace agrees with a Praat-based syllable detector on real clips, but there is no human syllable count, so treat it as a guide. While you record, a live meter, speech flag, pitch and pace come from voice-core's streaming analyzer. Jitter and shimmer (compared with Praat on the same real clips) and HNR are batch-only, so they appear once you stop or upload; they need a few seconds of voiced speech and read best on a sustained vowel. Not a medical test.</p>
 <p id="status" class="tag soon">loading voice-core…</p>
-<p><button class="primary" id="rec" disabled>Record</button> <label>or upload <input type="file" id="file" accept="audio/*" disabled></label></p>
+<p style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><button class="primary" id="rec" disabled><svg class="i" id="rec-icon" viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="rec-label">Record</span></button> or <label class="upload"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px"><path d="M12 15V3M7 8l5-5 5 5M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Upload audio <input type="file" id="file" accept="audio/*" disabled></label></p>
 <div class="card" id="live" hidden>
-<div class="meter"><div id="meter-fill"></div></div>
+<canvas id="wave" class="wave" width="720" height="72" role="img" aria-label="Live waveform of the microphone input"></canvas>
 <p><span id="live-speech" class="tag">silence</span> &nbsp;level <b id="live-level">-</b> dBFS &nbsp;&middot;&nbsp; live pitch <b id="live-f0">-</b> Hz &nbsp;&middot;&nbsp; live pace <b id="live-pace">-</b> syl/s</p>
 <p class="try">Live numbers are quick estimates from voice-core's streaming analyzer, so pitch can jump octaves. The final numbers below appear when you stop.</p>
 </div>
 <div class="tiles">
-<div class="tile"><small>Duration</small><b id="t-dur">-</b></div>
-<div class="tile"><small>Loudness (LUFS)</small><b id="t-lufs">-</b></div>
-<div class="tile"><small>Overall level (dBFS)</small><b id="t-rms">-</b></div>
-<div class="tile"><small>Median pitch (Hz)</small><b id="t-f0">-</b></div>
-<div class="tile"><small>Voiced share</small><b id="t-voiced">-</b></div>
-<div class="tile"><small>Pace (syllables/s) <span class="tag soon">early</span></small><b id="t-pace">-</b></div>
-<div class="tile"><small>Pauses</small><b id="t-pauses">-</b></div>
-<div class="tile"><small>Longest pause</small><b id="t-longest">-</b></div>
-<div class="tile"><small>Jitter (%)</small><b id="t-jit">-</b></div>
-<div class="tile"><small>Shimmer (%)</small><b id="t-shim">-</b></div>
-<div class="tile"><small>HNR (dB)</small><b id="t-hnr">-</b></div></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/></svg>Duration</small><b id="t-dur">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>Loudness (LUFS)</small><b id="t-lufs">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20v-5"/></svg>Overall level (dBFS)</small><b id="t-rms">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>Median pitch (Hz)</small><b id="t-f0">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10H12zM15 2.5A10 10 0 0 1 21.5 9H15z"/></svg>Voiced share</small><b id="t-voiced">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14l4-4M3.3 19a10 10 0 1 1 17.4 0z"/></svg>Pace (syllables/s) <span class="tag soon">early</span></small><b id="t-pace">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>Pauses</small><b id="t-pauses">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h14M5 22h14M17 2v4l-5 6 5 6v4M7 2v4l5 6-5 6v4"/></svg>Longest pause</small><b id="t-longest">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h3l2-5 3 10 3-12 3 9 2-2h4"/></svg>Jitter (%)</small><b id="t-jit">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2"/></svg>Shimmer (%)</small><b id="t-shim">-</b></div>
+<div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>HNR (dB)</small><b id="t-hnr">-</b></div></div>
 <p id="warn" class="try"></p>
 <h2>Level over time (25 ms frames)</h2><canvas id="c1" width="720" height="140"></canvas>
 <h2>Pitch over time (voiced frames)</h2><canvas id="c2" width="720" height="140"></canvas>
@@ -56,6 +56,16 @@ function draw(c,d,min,max,skipZero){
     const px=i/(d.length-1||1)*w,py=h-(Math.min(Math.max(y,min),max)-min)/(max-min)*h;on?g.lineTo(px,py):g.moveTo(px,py);on=true}
   g.stroke();
 }
+function drawWave(c,lv){
+  const g=c.getContext('2d'),w=c.width,h=c.height,mid=h/2,N=120,acc=getComputedStyle(document.documentElement).getPropertyValue('--acc');
+  g.clearRect(0,0,w,h);const rec=lv.slice(-N),off=N-rec.length,top=[];
+  for(let i=0;i<rec.length;i++){const a=Math.max(0,Math.min(1,(rec[i]+80)/80));top.push([(i+off)/(N-1)*w,Math.max(1,a*a*mid)])}
+  if(!top.length)return;
+  g.beginPath();top.forEach(([x,a],i)=>i?g.lineTo(x,mid-a):g.moveTo(x,mid-a));
+  for(let i=top.length-1;i>=0;i--)g.lineTo(top[i][0],mid+top[i][1]);
+  g.closePath();g.globalAlpha=.35;g.fillStyle=acc;g.fill();g.globalAlpha=1;g.strokeStyle=acc;g.lineWidth=1.5;g.stroke();
+}
+function setRec(label,on){$('rec-label').textContent=label;$('rec').classList.toggle('recording',on)}
 async function decode(ab){const c=new (window.AudioContext||webkitAudioContext)();try{const b=await c.decodeAudioData(ab);run(b.getChannelData(0),b.sampleRate)}catch(e){$('warn').textContent='Could not decode this audio file.'}c.close()}
 $('file').onchange=e=>e.target.files[0]&&e.target.files[0].arrayBuffer().then(decode);
 const WORKLET=`class P extends AudioWorkletProcessor{constructor(){super();this.b=[];this.n=0}process(i){const c=i[0]&&i[0][0];if(c){this.b.push(c.slice());this.n+=c.length;if(this.n>=1024){const o=new Float32Array(this.n);let k=0;for(const a of this.b){o.set(a,k);k+=a.length}this.port.postMessage(o,[o.buffer]);this.b=[];this.n=0}}return true}}registerProcessor('cap',P)`;
@@ -75,14 +85,14 @@ async function startRec(){
     const s=session={ctx,stream,node,la:new LiveAnalyzer(ctx.sampleRate),chunks:[],lv:[],f0:[],t0:performance.now()};
     node.port.onmessage=e=>{s.chunks.push(e.data);live(s,s.la.push(e.data))};
     $('live').hidden=false;$('warn').textContent='';
-    s.timer=setInterval(()=>{const n=Math.floor((performance.now()-s.t0)/1000);$('rec').textContent='Stop ('+n+' s)';if(n>=MAX_S)stopRec()},250);
-    $('rec').textContent='Stop (0 s)';$('file').disabled=true;
+    s.timer=setInterval(()=>{const n=Math.floor((performance.now()-s.t0)/1000);setRec('Stop ('+n+' s)',true);if(n>=MAX_S)stopRec()},250);
+    setRec('Stop (0 s)',true);$('file').disabled=true;
   }catch(e){stream.getTracks().forEach(t=>t.stop());ctx.close();session=null;alert('Could not start recording: '+e.message)}
 }
 function live(s,fr){
   for(let i=0;i<fr.length;i+=6){s.lv.push(fr[i+1]);s.f0.push(fr[i+3])}
   if(!fr.length)return;const k=fr.length-6,lvl=fr[k+1],sp=fr[k+2]>0,f=fr[k+3],pc=fr[k+5];
-  $('meter-fill').style.width=Math.max(0,Math.min(100,(lvl+80)/80*100))+'%';
+  drawWave($('wave'),s.lv);
   $('live-level').textContent=lvl.toFixed(0);$('live-f0').textContent=f>0?f.toFixed(0):'-';$('live-pace').textContent=pc>=0?pc.toFixed(1):'-';
   $('live-speech').textContent=sp?'speech':'silence';$('live-speech').className='tag '+(sp?'live':'');
   draw($('c1'),s.lv,-80,0,false);draw($('c2'),s.f0,0,400,true);
@@ -91,7 +101,7 @@ function stopRec(){
   const s=session;if(!s)return;session=null;clearInterval(s.timer);
   s.node.port.onmessage=null;s.node.disconnect();s.stream.getTracks().forEach(t=>t.stop());
   const sr=s.ctx.sampleRate;s.ctx.close();s.la.finish();
-  $('live').hidden=true;$('rec').textContent='Record';$('file').disabled=false;
+  $('live').hidden=true;setRec('Record',false);$('file').disabled=false;
   let n=0;for(const c of s.chunks)n+=c.length;
   if(!n){$('warn').textContent='No audio was captured.';return}
   const x=new Float32Array(n);let k=0;for(const c of s.chunks){x.set(c,k);k+=c.length}
