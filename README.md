@@ -27,3 +27,7 @@ python3 -m http.server 8000      # then open http://localhost:8000
 ## Status
 
 The dashboard shows what voice-core measures today: duration, loudness, overall level, pitch, pace (syllables per second), pause count and longest pause, jitter, shimmer and HNR, plus voice-core's own quality warnings (too short, clipped, too quiet, noisy). Pitch and pauses are compared with Praat on twenty real speech clips; pace is validated on synthetic bursts and against a Praat-based detector on real clips (no human syllable count). Jitter, shimmer and HNR are batch-only (not live). Recording shows a live meter, speech/silence flag, pitch and pace from voice-core's streaming analyzer, then the batch numbers when you stop. The walkthrough tags each concept as in voice-core or planned; keep those tags in sync with voice-core's README.
+
+## Fonts
+
+The site bundles [Open Sans](https://github.com/googlefonts/opensans) (`fonts/`), licensed under the SIL Open Font License 1.1; the license text is in `fonts/OFL.txt`. The fonts are served from this repo, so visiting the site makes no request to a third party.
