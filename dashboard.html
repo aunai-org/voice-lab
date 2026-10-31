@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css?v=4"></head><body><header class="top"><a class="brand" href="index.html"><svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true"><rect x="2" y="11" width="3" height="6" rx="1.5"/><rect x="8" y="6" width="3" height="16" rx="1.5"/><rect x="14" y="2" width="3" height="24" rx="1.5"/><rect x="20" y="8" width="3" height="12" rx="1.5"/></svg>voice-lab</a><nav aria-label="Primary"><a href="index.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>How it works</a><a href="pamphlet.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>What is it?</a><a href="dashboard.html" aria-current="page"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Try it</a></nav><span id="status" class="tag soon">loading voice-core…</span></header><main class="wide">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>voice-lab: try it</title><link rel="stylesheet" href="style.css?v=5"></head><body><header class="top"><a class="brand" href="index.html"><svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true"><rect x="2" y="11" width="3" height="6" rx="1.5"/><rect x="8" y="6" width="3" height="16" rx="1.5"/><rect x="14" y="2" width="3" height="24" rx="1.5"/><rect x="20" y="8" width="3" height="12" rx="1.5"/></svg>voice-lab</a><nav aria-label="Primary"><a href="index.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>How it works</a><a href="pamphlet.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>What is it?</a><a href="dashboard.html" aria-current="page"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Try it</a></nav><span id="status" class="tag soon">loading voice-core…</span></header><main class="wide">
 <h1>Measure your voice. <span class="hl">Right here.</span></h1>
 <p class="lead">Powered by voice-core, a Rust library compiled to WebAssembly. It runs in your browser and nothing leaves your device. Not a medical test.</p>
 <details class="card"><summary>How this is measured</summary><p><b>Powered by voice-core.</b> The measuring runs in the real Rust library, compiled to WebAssembly, inside your browser. Nothing leaves your device. Pitch and pauses are checked against Praat on real speech clips. Pace agrees with a Praat-based syllable detector on real clips, but there is no human syllable count, so treat it as a guide. While you record, a live meter, speech flag, pitch and pace come from voice-core's streaming analyzer. Jitter and shimmer (compared with Praat on the same real clips) and HNR are batch-only, so they appear once you stop or upload; they need a few seconds of voiced speech and read best on a sustained vowel. Not a medical test.</p></details>
@@ -23,6 +23,7 @@
 <div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2"/></svg>Shimmer (%)</small><b id="t-shim">-</b></div>
 <div class="tile"><small><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>HNR (dB)</small><b id="t-hnr">-</b></div></div>
 <p id="warn" role="status"></p>
+<section class="card" id="playback" hidden><h2><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 9-14 9z"/></svg>Your recording <small>stays on this device</small></h2><audio id="player" controls></audio></section>
 <div class="charts">
 <section class="card"><h2><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>Level over time <small>25 ms frames</small></h2><canvas id="c1" width="720" height="140"></canvas></section>
 <section class="card"><h2><svg class="i ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 4-8 5 5"/></svg>Pitch over time <small>voiced frames</small></h2><canvas id="c2" width="720" height="140"></canvas></section>
@@ -33,8 +34,20 @@ import init,{analyze,level_curve,pitch_track,LiveAnalyzer} from './pkg/voice_lab
 const $=i=>document.getElementById(i);
 try{await init();$('status').textContent='voice-core ready';$('status').className='tag live';$('rec').disabled=false;$('file').disabled=false}
 catch(e){$('status').textContent='voice-core not built: run scripts/build-wasm.sh (see README)'}
+function toWav(x,sr){
+  const n=x.length,b=new ArrayBuffer(44+n*2),v=new DataView(b),s=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
+  s(0,'RIFF');v.setUint32(4,36+n*2,true);s(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);s(36,'data');v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++){const c=Math.max(-1,Math.min(1,x[i]));v.setInt16(44+i*2,c<0?c*0x8000:c*0x7fff,true)}
+  return new Blob([b],{type:'audio/wav'});
+}
+let playUrl=null;
+function setPlayback(x,sr){
+  if(playUrl)URL.revokeObjectURL(playUrl);
+  playUrl=URL.createObjectURL(toWav(x,sr));$('player').src=playUrl;$('playback').hidden=false;
+}
 function run(x,sr){
-  $('warn').textContent='';$('tiles').classList.remove('idle');
+  $('warn').textContent='';$('tiles').classList.remove('idle');setPlayback(x,sr);
   try{
     const r=JSON.parse(analyze(x,sr)),lv=level_curve(x,sr),f0=pitch_track(x,sr);
     $('t-dur').textContent=r.duration_s.toFixed(1)+' s';
